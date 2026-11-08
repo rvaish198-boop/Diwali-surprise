@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diwali Surprise</title>
+    <style>
+        :root {
+            --bg-dark: #12072B;
+            --gold: #FCD34D;
+            --pink: #EC4899;
+            --purple-light: #4C1D95;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        #game-phone {
+            width: 100vw;
+            height: 100vh;
+            max-width: 420px;
+            max-height: 840px;
+            background: linear-gradient(to bottom, #1e0b36, #0c0418);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            border-radius: 16px;
+        }
+        .header-banner {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 10;
+            width: 90%;
+            pointer-events: none;
+        }
+        .header-banner p {
+            color: var(--gold);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+            margin-bottom: 8px;
+        }
+        .step-bubble {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px);
+            padding: 6px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 0.85rem;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+        .stage {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 80px 20px 40px 20px;
+        }
+        .stage.active { display: flex; }
+        
+        /* Bottom Artwork Graphics */
+        .scenery-base {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 320px;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .skyline {
+            position: absolute;
+            bottom: 60px;
+            width: 100%;
+            height: 160px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            opacity: 0.85;
+        }
+        .building {
+            width: 18%;
+            background: #2a114d;
+            border-radius: 4px 4px 0 0;
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .b1 { height: 120px; background: #3b1766; }
+        .b2 { height: 150px; background: #2e1252; }
+        .b3 { height: 100px; background: #441b75; }
+        .b4 { height: 130px; background: #250e44; }
+        
+        .character-couple {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        .avatar { width: 75px; height: 110px; background-size: contain; background-repeat: no-repeat; position: relative; }
+        .boy { background-image: url('https://icons8.com'); filter: hue-rotate(220deg) brightness(1.2); }
+        .girl { height: 105px; background-image: url('https://icons8.com'); filter: hue-rotate(300deg) brightness(1.2); }
+        .rabbit { width: 30px; height: 35px; background-image: url('https://icons8.com'); background-size: contain; position: absolute; left: -35px; bottom: 0; }
+
+        /* Interactive Elements */
+        .action-btn {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: #fff;
+            padding: 14px 36px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(217, 119, 6, 0.4);
+            z-index: 5;
+            transition: transform 0.2s;
+        }
+        .action-btn:active { transform: scale(0.95); }
+
+        /* Star Lights Generator */
+        .sky-stars-container {
+            position: absolute;
+            top: 140px;
+            width: 100%;
+            height: 200px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 3;
+        }
+        .star-lantern {
+            width: 45px;
+            height: 45px;
+            background: url('https://icons8.com') no-repeat center/contain;
+            cursor: pointer;
+            transition: filter 0.3s;
+            filter: grayscale(1) brightness(0.5);
+        }
+        .star-lantern.lit {
+            filter: grayscale(0) brightness(1.3) drop-shadow(0 0 10px var(--gold));
+            animation: float 2s infinite ease-in-out alternate;
+        }
+
+        /* Diya Courtyard Graphic Settings */
+        .doorway-bg {
+            background: #b63b5e;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .temple-door {
+            width: 140px;
+            height: 200px;
+            background: #5c192d;
+            border: 6px solid var(--gold);
+            border-bottom: none;
+            border-radius: 70px 70px 0 0;
+            position: relative;
+        }
+        .board-sign {
+            background: #fff;
+            color: #000;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid var(--gold);
+            width: 80%;
+            max-width: 260px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.5s ease;
+        }
+        .board-sign.reveal { opacity: 1; transform: scale(1); }
+        
+        .diya-row {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+            z-index: 4;
+        }
+        .floor-diya {
+            width: 35px;
+            height: 20px;
+            background: #d35400;
+            border-radius: 0 0 20px 20px;
+            position: relative;
+            cursor: pointer;
+        }
+        .floor-flame {
+            width: 10px;
+            height: 18px;
+            background: var(--gold);
+            border-radius: 50% 50% 20% 20%;
+            position: absolute;
+            top: -16px;
+            left: 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .floor-diya.lit .floor-flame { opacity: 1; box-shadow: 0 0 10px var(--gold); }
+
+        /* Gift Chest Layout */
+        .gift-box {
+            width: 120px;
+            height: 100px;
+            background: #8b5a2b;
+            border: 4px solid var(--gold);
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+            margin: auto;
+        }
+        .gift-lid {
+            width: 128px;
+            height: 30px;
+            background: #a06d3b;
+            border: 4px solid var(--gold);
+            position: absolute;
+            top: -24px;
+            left: -8px;
+            border-radius: 4px;
+            transition: transform 0.4s;
+        }
+        .gift-box.open .gift-lid { transform: translateY(-40px) rotate(-15deg); }
+
+        /* Coupon Letter Cards */
+        .letter-card {
+            background: #fff4e0;
+            color: #332200;
+            width: 90%;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            margin: auto;
+        }
+        .coupon {
+            background: #fff;
+            border: 2px dashed #d97706;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Sky Lantern System Engine */
+        .lantern-fly-zone {
+            width: 100%;
+            height: 60%;
+            position: relative;
+            cursor: crosshair;
+        }
+        .flying-lantern {
+            width: 40px;
+            height: 55px;
+            background: #ff6b4a;
+            border-radius: 10px 10px 4px 4px;
+            position: absolute;
+            box-shadow: 0 0 15px rgba(255,107,74,0.6);
+            animation: riseUp 5s linear forwards;
+        }
+        @keyframes riseUp {
+            0% { transform: translateY(400px) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(0.6); opacity: 0; }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-8px); }
+        }
+        
+        /* Music Control Panel Header */
+        .music-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(255,255,255,0.2);
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-phone">
